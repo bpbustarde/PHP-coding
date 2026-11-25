@@ -1,120 +1,146 @@
 <?php
-require_once 'header.php';
+declare(strict_types=1);
 
-$customerName = "Ben";
-$isMember = true;
-$selectedDay = "Saturday";
-$favorites = ["Chocolate", "Toffee", "Fudge"];
+$shop = "Santa's Candy Store";
+$tax = 12;
 
-$offers = [
-    ["name" => "Toffee", "price" => 5, "stock" => 120],
-    ["name" => "Mints", "price" => 3, "stock" => 66],
-    ["name" => "Fudge", "price" => 4, "stock" => 97]
+$items = [
+    "Toffee" => ["price" => 180, "qty" => 24, "batch" => "Holiday batch"],
+    "Mints" => ["price" => 95, "qty" => 35, "batch" => "Classic tin"],
+    "Fudge" => ["price" => 210, "qty" => 8, "batch" => "Small batch"],
+    "Caramel Chews" => ["price" => 120, "qty" => 15, "batch" => "Wrapped pack"],
+    "Peppermint Bark" => ["price" => 250, "qty" => 6, "batch" => "Seasonal"],
+    "Gummy Bears" => ["price" => 110, "qty" => 40, "batch" => "Assorted"]
 ];
 
-$nutrition = [
-    "fat" => 36,
-    "sugar" => 51,
-    "salt" => 0.25,
-    "fiber" => 2.1
-];
-
-$items = 3;
-$cost = 5;
-$subtotal = $cost * $items;
-$tax = ($subtotal / 100) * 12;
-$total = $subtotal + $tax;
-
-$bulkPriceString = "25";
-$bulkPacks = 2;
-$bulkTotal = $bulkPriceString * $bulkPacks;
-
-echo "<h2>Welcome</h2>";
-echo "<p>Hello, " . $customerName . "! Your favorite candy is " . $favorites[0] . ".</p>";
-if ($isMember) {
-    echo "<p>Member perk active: You get priority access to seasonal holiday treats.</p>";
+function get_reorder_message(int $stock): string {
+    return ($stock < 10) ? "Yes" : "No";
 }
 
-echo "<h2>Cart & Promo Check</h2>";
-if ($subtotal >= 15) {
-    echo "<p>Your subtotal is $" . $subtotal . " — you qualify for a free sample pack!</p>";
-} else {
-    echo "<p>Your subtotal is $" . $subtotal . " — add more items to unlock a free sample pack.</p>";
+function get_total_value(float $price, int $qty): float {
+    return $price * $qty;
 }
 
-echo "<h2>Order Tier</h2>";
-if ($total >= 30) {
-    echo "<p>Order Tier: Gold Bundle (Total: $" . $total . ")</p>";
-} elseif ($total >= 15) {
-    echo "<p>Order Tier: Silver Pack (Total: $" . $total . ")</p>";
-} else {
-    echo "<p>Order Tier: Standard Treat (Total: $" . $total . ")</p>";
+function get_tax_due(float $price, int $qty, int $rate = 0): float {
+    $val = $price * $qty;
+    return $val * ($rate / 100);
 }
 
-echo "<h2>Daily Store Schedule</h2>";
-switch ($selectedDay) {
-    case "Monday":
-        echo "<p>Monday: Fresh fudge batch coming out in the morning.</p>";
-        break;
-    case "Friday":
-        echo "<p>Friday: Weekend mint and toffee bundles available.</p>";
-        break;
-    case "Saturday":
-    case "Sunday":
-        echo "<p>Weekend Special: Extended holiday hours all day.</p>";
-        break;
-    default:
-        echo "<p>Regular weekday candy counter hours.</p>";
-        break;
-}
-
-echo "<h2>Sugar Level Rating</h2>";
-$sugarLevel = $nutrition["sugar"];
-$sugarNote = match (true) {
-    $sugarLevel >= 50 => "High sugar treat (51% per 100g)",
-    $sugarLevel >= 25 => "Moderate sweetness",
-    default => "Lightly sweet",
-};
-echo "<p>" . $sugarNote . "</p>";
-
-echo "<h2>Shopping Cart</h2>";
-echo "<p>Items: " . $items . "</p>";
-echo "<p>Cost per pack: $" . $cost . "</p>";
-echo "<p>Subtotal: $" . $subtotal . "</p>";
-echo "<p>Tax (12%): $" . $tax . "</p>";
-echo "<p><strong>Total: $" . $total . "</strong></p>";
-echo "<p>Bulk order (" . $bulkPacks . " x $" . $bulkPriceString . " string juggled): $" . $bulkTotal . "</p>";
-
-echo "<h2>Current Offers & Stock Status</h2>";
-foreach ($offers as $candy) {
-    $status = ($candy["stock"] > 100) ? "Well Stocked" : "Available";
-    echo "<p>" . $candy["name"] . " - $" . $candy["price"] . " (" . $candy["stock"] . " in stock - " . $status . ")</p>";
-}
-
-echo "<h2>Gift Box Sizes</h2>";
-for ($boxSize = 2; $boxSize <= 6; $boxSize += 2) {
-    echo "<p>" . $boxSize . "-piece assorted candy box</p>";
-}
-
-echo "<h2>Bonus Voucher Counter</h2>";
-$voucher = 1;
-while ($voucher <= 3) {
-    echo "<p>Voucher #" . $voucher . " valid for next visit</p>";
-    $voucher++;
-}
-
-echo "<h2>Tasting Station</h2>";
-$round = 1;
-do {
-    echo "<p>Tasting flight #" . $round . " ready</p>";
-    $round++;
-} while ($round <= 2);
-
-echo "<h2>Nutrition (per 100g)</h2>";
-echo "<p>Fat: " . $nutrition["fat"] . "%</p>";
-echo "<p>Sugar: " . $nutrition["sugar"] . "%</p>";
-echo "<p>Salt: " . $nutrition["salt"] . "%</p>";
-echo "<p>Fiber: " . $nutrition["fiber"] . "%</p>";
-
-include_once 'footer.php';
+$sumQty = 0;
+$sumValue = 0;
+$sumTax = 0;
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title><?= $shop ?> - Stock Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #faf3f4;
+            color: #2b191c;
+            margin: 30px;
+        }
+        .box {
+            max-width: 860px;
+            margin: auto;
+            background: #fff;
+            padding: 24px;
+            border: 1px solid #e5cbd0;
+            border-radius: 6px;
+        }
+        h1 {
+            color: #8b1e2b;
+            margin-bottom: 4px;
+        }
+        .tag {
+            font-size: 13px;
+            color: #6e5257;
+            margin-bottom: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #8b1e2b;
+            color: #fff;
+            text-align: left;
+            padding: 10px;
+            font-size: 13px;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee0e3;
+            font-size: 14px;
+        }
+        .note {
+            display: block;
+            font-size: 12px;
+            color: #775c61;
+        }
+        .low {
+            color: #9e1b24;
+            font-weight: bold;
+        }
+        .ok {
+            color: #2e6b3e;
+        }
+        .total-row td {
+            font-weight: bold;
+            background: #fdf6f7;
+            border-top: 2px solid #d9b8be;
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1><?= $shop ?></h1>
+    <div class="tag">Stock Control &bull; Prices in PHP (&#8369;) &bull; Tax: <?= $tax ?>%</div>
+
+    <table>
+        <tr>
+            <th>PRODUCT</th>
+            <th>PRICE</th>
+            <th>STOCK</th>
+            <th>RE-ORDER</th>
+            <th>TOTAL VALUE</th>
+            <th>TAX DUE</th>
+        </tr>
+        <?php foreach ($items as $prod => $info): ?>
+            <?php
+            $p = (float)$info["price"];
+            $q = (int)$info["qty"];
+            $reorder = get_reorder_message($q);
+            $val = get_total_value($p, $q);
+            $due = get_tax_due($p, $q, $tax);
+
+            $sumQty += $q;
+            $sumValue += $val;
+            $sumTax += $due;
+            ?>
+            <tr>
+                <td>
+                    <?= $prod ?>
+                    <span class="note"><?= $info["batch"] ?></span>
+                </td>
+                <td>&#8369;<?= number_format($p, 2) ?></td>
+                <td><?= $q ?></td>
+                <td class="<?= ($reorder === "Yes") ? "low" : "ok" ?>"><?= $reorder ?></td>
+                <td>&#8369;<?= number_format($val, 2) ?></td>
+                <td>&#8369;<?= number_format($due, 2) ?></td>
+            </tr>
+        <?php endforeach; ?>
+        <tr class="total-row">
+            <td>Total (<?= count($items) ?> items)</td>
+            <td>-</td>
+            <td><?= $sumQty ?></td>
+            <td>-</td>
+            <td>&#8369;<?= number_format($sumValue, 2) ?></td>
+            <td>&#8369;<?= number_format($sumTax, 2) ?></td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

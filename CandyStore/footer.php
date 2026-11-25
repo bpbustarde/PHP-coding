@@ -1,8 +1,12 @@
 <?php
-$storeYear = 2026;
+function create_copyright_notice($companyName) {
+    $year = date("Y");
+    $message = "&copy; " . $year . " " . $companyName . ". All rights reserved.";
+    return $message;
+}
 ?>
     <hr>
-    <p>&copy; <?= $storeYear ?> Santa's Candy Store. All rights reserved.</p>
+    <p><?= create_copyright_notice("Santa's Candy Store") ?></p>
 </div>
 </body>
 </html>

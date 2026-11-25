@@ -1,5 +1,9 @@
 <?php
 $storeTitle = "Santa's Candy Store";
+
+function get_store_tagline() {
+    return "Sweet treats and holiday favorites all year round";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,6 +30,7 @@ $storeTitle = "Santa's Candy Store";
 
         h1 {
             color: gold;
+            margin-bottom: 5px;
         }
 
         h2 {
@@ -41,9 +46,27 @@ $storeTitle = "Santa's Candy Store";
         hr {
             border: 1px solid #aa5555;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #aa5555;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #660000;
+            color: gold;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1><?= $storeTitle ?></h1>
+    <p><em><?= get_store_tagline() ?></em></p>
     <hr>
